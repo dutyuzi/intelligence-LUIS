@@ -25,8 +25,12 @@
 
         private const string EntityCollegeName = "院系";
         private const string EntityCityName = "省市地区";
-        private const string EntityPersonName = "人物";
+        private const string EntityNoun = "名词";
         private const string EntityNumber = "数量";
+        private const string EntityPeople = "人物";
+        private const string Entityverb = "动词";
+        private const string EntityAdress = "地址";
+
 
         private const string EntityAirportCode = "AirportCode";
 
@@ -76,21 +80,20 @@
 
         }
 
-        [LuisIntent("查询人数")]
+        [LuisIntent("查询数量")]
         public async Task SearchNumber(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
             var message = await activity;
 
-            EntityRecommendation People;
+            EntityRecommendation Noun;
          
-            if (result.TryFindEntity(EntityPersonName, out People))
+            if (result.TryFindEntity(EntityNoun, out Noun))
             {
-
-                await context.PostAsync(QNaMaker("有多少" + People.Entity));
+                await context.PostAsync(QNaMaker("有多少" + Noun.Entity));
             }
             else
             {
-
+              
             }
 
         }
@@ -102,11 +105,97 @@
 
             EntityRecommendation People;
 
-            if (result.TryFindEntity(EntityPersonName, out People))
+            if (result.TryFindEntity(EntityPeople, out People))
             {
-
                 await context.PostAsync(QNaMaker(People.Entity+"是谁"));
-                await context.PostAsync((People.Entity));
+                //await context.PostAsync((People.Entity));
+            }
+            else
+            {
+                await context.PostAsync("不知道要查谁");
+            }
+
+        }
+
+
+        [LuisIntent("一般查询")]
+        public async Task SearchOther(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            var message = await activity;
+
+            EntityRecommendation Noun;
+
+            if (result.TryFindEntity(EntityNoun, out Noun))
+            {
+                await context.PostAsync(QNaMaker(Noun.Entity + "是什么"));
+                //await context.PostAsync((People.Entity));
+            }
+            else
+            {
+                await context.PostAsync("大脑短路请稍等");
+            }
+
+        }
+        [LuisIntent("查询地址")]
+        public async Task SearchAdress(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            var message = await activity;
+
+            EntityRecommendation Noun;
+            EntityRecommendation adress;
+            if (result.TryFindEntity(EntityAdress, out adress))
+            {
+                if(result.TryFindEntity(EntityNoun, out Noun))
+                {
+        
+                    await context.PostAsync(QNaMaker(Noun.Entity + "在哪里"));
+                }
+                else
+                {
+                
+                    await context.PostAsync(QNaMaker("在哪里"));
+                }
+              
+                //await context.PostAsync((People.Entity));
+            }
+            else
+            {
+                await context.PostAsync("大脑短路请稍等");
+            }
+
+        }
+        
+
+
+        [LuisIntent("一般疑问")]
+        public async Task YesorNo(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            var message = await activity;
+            EntityRecommendation People;
+            EntityRecommendation Noun;
+            if (result.TryFindEntity(EntityPeople, out People))
+            {
+                string QNaAnswer = QNaMaker(People.Entity + "是谁");
+                if (result.Query.Contains(QNaAnswer))
+                {
+                    await context.PostAsync("是呀是呀O(∩_∩)O嗯!");
+                }
+                else
+                {
+                    await context.PostAsync("不是这样的！~~~^_^~~~");
+                }
+            }
+            else if (result.TryFindEntity(EntityNoun, out Noun))
+            {
+                string QNaAnswer = QNaMaker(Noun.Entity + "是什么");
+                if (result.Query.Contains(QNaAnswer))
+                {
+                    await context.PostAsync("是呀是呀O(∩_∩)O嗯!");
+                }
+                else
+                {
+                    await context.PostAsync("不是这样的！~~~^_^~~~");
+                }
             }
             else
             {
@@ -115,6 +204,41 @@
 
         }
 
+
+        [LuisIntent("查询时间")]
+        public async Task QuestionTime(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            var message = await activity;
+            EntityRecommendation verb;
+            EntityRecommendation Noun;
+            string subject;
+
+
+            if (result.TryFindEntity(Entityverb, out verb))
+            {   
+                if(result.TryFindEntity(EntityCollegeName, out Noun))
+                {
+                    subject = Noun.Entity;
+
+                }
+                else if (result.TryFindEntity(EntityNoun, out Noun))
+                {
+                    subject = Noun.Entity;
+                }
+                else
+                {
+                    subject = "";
+                }
+
+                string QNaAnswer = QNaMaker(subject+"什么时候" +verb.Entity );
+                await context.PostAsync(QNaAnswer);
+            }
+            else
+            {
+
+            }
+
+        }
         [LuisIntent("Help")]
         public async Task Help(IDialogContext context, LuisResult result)
         {
